@@ -19,13 +19,14 @@ package alicloud
 import (
 	//"errors"
 	"fmt"
-	"github.com/denverdino/aliyungo/slb"
-	"github.com/golang/glog"
-	"k8s.io/api/core/v1"
-	"k8s.io/cloud-provider-alibaba-cloud/cloud-controller-manager/utils"
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/denverdino/aliyungo/slb"
+	"github.com/golang/glog"
+	v1 "k8s.io/api/core/v1"
+	"k8s.io/cloud-provider-alibaba-cloud/cloud-controller-manager/utils"
 )
 
 // DEFAULT_LISTENER_BANDWIDTH default listener bandwidth
@@ -592,7 +593,9 @@ func (t *tcp) Update() error {
 	}
 	utils.Logf(t.Service, "tcp listener %d status is %s.", t.Port, response.Status)
 	if response.Status == slb.Stopped {
-		if err = t.Client.StartLoadBalancerListener(t.LoadBalancerID, int(t.Port)); err != nil {
+		if isUserDefinedLoadBalancer(t.Service) {
+			utils.Logf(t.Service, "user defined loadBalancer will not start tcp listener %d", t.Port)
+		} else if err = t.Client.StartLoadBalancerListener(t.LoadBalancerID, int(t.Port)); err != nil {
 			return fmt.Errorf("start tcp listener error: %s", err.Error())
 		}
 	}
@@ -766,7 +769,9 @@ func (t *udp) Update() error {
 	}
 	utils.Logf(t.Service, "udp listener %d status is %s.", t.Port, response.Status)
 	if response.Status == slb.Stopped {
-		if err = t.Client.StartLoadBalancerListener(t.LoadBalancerID, int(t.Port)); err != nil {
+		if isUserDefinedLoadBalancer(t.Service) {
+			utils.Logf(t.Service, "user defined loadBalancer will not start udp listener %d", t.Port)
+		} else if err = t.Client.StartLoadBalancerListener(t.LoadBalancerID, int(t.Port)); err != nil {
 			return fmt.Errorf("start udp listener error: %s", err.Error())
 		}
 	}
@@ -961,7 +966,9 @@ func (t *http) Update() error {
 	}
 	utils.Logf(t.Service, "http listener %d status is %s.", t.Port, response.Status)
 	if response.Status == slb.Stopped {
-		if err = t.Client.StartLoadBalancerListener(t.LoadBalancerID, int(t.Port)); err != nil {
+		if isUserDefinedLoadBalancer(t.Service) {
+			utils.Logf(t.Service, "user defined loadBalancer will not start http listener %d", t.Port)
+		} else if err = t.Client.StartLoadBalancerListener(t.LoadBalancerID, int(t.Port)); err != nil {
 			return fmt.Errorf("start http listener error: %s", err.Error())
 		}
 	}
@@ -1189,7 +1196,9 @@ func (t *https) Update() error {
 	}
 	utils.Logf(t.Service, "https listener %d status is %s.", t.Port, response.Status)
 	if response.Status == slb.Stopped {
-		if err = t.Client.StartLoadBalancerListener(t.LoadBalancerID, int(t.Port)); err != nil {
+		if isUserDefinedLoadBalancer(t.Service) {
+			utils.Logf(t.Service, "user defined loadBalancer will not start https listener %d", t.Port)
+		} else if err = t.Client.StartLoadBalancerListener(t.LoadBalancerID, int(t.Port)); err != nil {
 			return fmt.Errorf("start https listener error: %s", err.Error())
 		}
 	}
